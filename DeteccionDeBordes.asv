@@ -1,0 +1,146 @@
+function varargout = DeteccionDeBordes(varargin)
+% DETECCIONDEBORDES MATLAB code for DeteccionDeBordes.fig
+%      DETECCIONDEBORDES, by itself, creates a new DETECCIONDEBORDES or raises the existing
+%      singleton*.
+%
+%      H = DETECCIONDEBORDES returns the handle to a new DETECCIONDEBORDES or the handle to
+%      the existing singleton*.
+%
+%      DETECCIONDEBORDES('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in DETECCIONDEBORDES.M with the given input arguments.
+%
+%      DETECCIONDEBORDES('Property','Value',...) creates a new DETECCIONDEBORDES or raises the
+%      existing singleton*.  Starting from the left, property value pairs are
+%      applied to the GUI before DeteccionDeBordes_OpeningFcn gets called.  An
+%      unrecognized property name or invalid value makes property application
+%      stop.  All inputs are passed to DeteccionDeBordes_OpeningFcn via varargin.
+%
+%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+%      instance to run (singleton)".
+%
+% See also: GUIDE, GUIDATA, GUIHANDLES
+
+% Edit the above text to modify the response to help DeteccionDeBordes
+
+% Last Modified by GUIDE v2.5 11-Dec-2013 01:08:30
+
+% Begin initialization code - DO NOT EDIT
+gui_Singleton = 1;
+gui_State = struct('gui_Name',       mfilename, ...
+                   'gui_Singleton',  gui_Singleton, ...
+                   'gui_OpeningFcn', @DeteccionDeBordes_OpeningFcn, ...
+                   'gui_OutputFcn',  @DeteccionDeBordes_OutputFcn, ...
+                   'gui_LayoutFcn',  [] , ...
+                   'gui_Callback',   []);
+if nargin && ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+% End initialization code - DO NOT EDIT
+
+
+% --- Executes just before DeteccionDeBordes is made visible.
+function DeteccionDeBordes_OpeningFcn(hObject, eventdata, handles, varargin)
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to DeteccionDeBordes (see VARARGIN)
+
+% Choose default command line output for DeteccionDeBordes
+handles.output = hObject;
+
+% Update handles structure
+guidata(hObject, handles);
+
+% UIWAIT makes DeteccionDeBordes wait for user response (see UIRESUME)
+% uiwait(handles.figure1);
+
+
+% --- Outputs from this function are returned to the command line.
+function varargout = DeteccionDeBordes_OutputFcn(hObject, eventdata, handles) 
+%imagen original
+axes(handles.axes1)
+img_ori = imread('4.jpg');
+m1 = imresize(img_ori,[350,350]);
+axis off;
+imshow(m1);
+%imagen a escala de grises
+axes(handles.axes2)
+escala = rgb2gray(img_ori);
+g=imresize(escala,[350,350]);
+axis off;
+imshow(g);
+%algoritmo de canny
+axes(handles.axes3)
+imagen=m1(:,:,1); 
+thresh = 1e-3; 
+sigma = 4; 
+E = edge(imagen,'canny',thresh,sigma);  
+axis off;
+imshow(E);
+%aplicando logica difusa
+axes(handles.axes4)
+[m,n]=size(g);
+ z=uint8(zeros(m,n));
+    for i=2:m-1
+        for j=2:n-1
+           if g(i-1,j-1)>128 & g(i-1,j)>128 & g(i,j-1)>128 & g(i,j)<=128
+                z(i,j)=255;
+           else if g(i-1,j-1)>128 & g(i-1,j)>128 & g(i,j-1)<=128 & g(i,j)<=128
+                   z(i,j)=255; 
+               else if g(i-1,j-1)>128 & g(i-1,j)<=128 & g(i,j-1)>128 & g(i,j)<=128
+                       z(i,j)=255; 
+                   else if g(i-1,j-1)<=128 & g(i-1,j)>128 & g(i,j-1)>128 & g(i,j)<=128
+                          z(i,j)=255; 
+                       else if g(i-1,j-1)<=128 & g(i-1,j)<=128 & g(i,j-1)<=128 & g(i,j)>128
+                                 z(i,j)=255; 
+                           else if g(i-1,j-1)<=128 & g(i-1,j)<=128 & g(i,j-1)>128 & g(i,j)>128
+                                     z(i,j)=255; 
+                               else if g(i-1,j-1)>128 & g(i-1,j)>128 & g(i,j-1)<=128 & g(i,j)<=128
+                                        z(i,j)=255; 
+                                   else if g(i-1,j-1)<=128 & g(i-1,j)>128 & g(i,j-1)<=128 & g(i,j)>128
+                                        z(i,j)=255; 
+                                       else if g(i-1,j-1)>128 & g(i-1,j)>128 & g(i,j-1)<=128 & g(i,j)>128
+                                              z(i,j)=255; 
+                                           else if g(i-1,j-1)>128 & g(i-1,j)<=128 & g(i,j-1)>128 & g(i,j)>128
+                                                  z(i,j)=255; 
+                                               end
+                                            end
+                                        end 
+                                    end
+                                end
+                           end
+                       end
+                   end
+               end
+           end
+        end
+    end
+axis off;
+imshow(z);
+
+
+% --- Executes on button press in pushbutton1.
+function pushbutton1_Callback(hObject, eventdata, handles)
+[FileName Path]=uigetfile({'*.jpg;*.bmp'},'Abrir Imagen');
+if isequal(FileName,0)
+    return
+else
+axes(handles.axes1);
+a=imread(strcat(Path,FileName));
+imshow(a);
+end
+handles.direccion=strcat(Path,FileName);
+guidata(hObject,handles)
+
+axes(handles.axes1)
+img_ori = imread('4.jpg');
+m1 = imresize(img_ori,[350,350]);
+axis off;
+imshow(m1);
